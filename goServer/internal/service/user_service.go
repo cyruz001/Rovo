@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"goServer/internal/domain"
+	"goServer/internal/model"
 	"goServer/internal/repository"
 	"goServer/pkg/utils"
 )
@@ -18,7 +18,7 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) Register(ctx context.Context, email, password string) (*domain.User, error) {
+func (s *UserService) Register(ctx context.Context, email, password string) (*model.User, error) {
 	// check existing
 	existing, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
@@ -33,10 +33,10 @@ func (s *UserService) Register(ctx context.Context, email, password string) (*do
 		return nil, err
 	}
 
-	u := &domain.User{
+	u := &model.User{
 		Email:     email,
 		Password:  hashed,
-		CreatedAt: time.Now().Unix(),
+		CreatedAt: time.Now(),
 	}
 	if err := s.repo.Create(ctx, u); err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (s *UserService) Register(ctx context.Context, email, password string) (*do
 	return u, nil
 }
 
-func (s *UserService) Authenticate(ctx context.Context, email, password string) (*domain.User, error) {
+func (s *UserService) Authenticate(ctx context.Context, email, password string) (*model.User, error) {
 	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return nil, err
@@ -58,6 +58,6 @@ func (s *UserService) Authenticate(ctx context.Context, email, password string) 
 	return user, nil
 }
 
-func (s *UserService) GetByID(ctx context.Context, id string) (*domain.User, error) {
+func (s *UserService) GetByID(ctx context.Context, id string) (*model.User, error) {
 	return s.repo.FindByID(ctx, id)
 }

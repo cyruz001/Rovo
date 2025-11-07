@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"goServer/internal/config"
-	"goServer/internal/domain"
+	"goServer/internal/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,7 +12,7 @@ import (
 )
 
 func Connect(cfg config.Config) *gorm.DB {
-	User := domain.User{}
+	User := model.User{}
 	dial := postgres.Open(cfg.DatabaseURL)
 	db, err := gorm.Open(dial, &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
