@@ -1,34 +1,29 @@
 package db
 
 import (
-	"context"
-	"goServer/internal/config"
 	"log"
-	"os"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"goServer/internal/config"
+	"goServer/internal/domain"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-func main() {
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+func Connect(cfg config.Config) *gorm.DB {
+	User := domain.User{}
+	dial := postgres.Open(cfg.DatabaseURL)
+	db, err := gorm.Open(dial, &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
-	}
-	defer conn.Close(context.Background())
-
-	var version string
-	if err := conn.QueryRow(context.Background(), "SELECT version()").Scan(&version); err != nil {
-		log.Fatalf("Query failed: %v", err)
+		log.Fatalf("failed to conn ect database: %v", err)
 	}
 
-	log.Println("Connected to:", version)
-}
-
-func Connect(cfg config.Config) *pgxpool.Pool {
-	pool, err := pgxpool.New(context.Background(), cfg.DB_URL)
-	if err != nil {
-		log.Fatal("Unable to connect to database:", err)
+	if err := db.AutoMigrate(User); err != nil {
+		log.Printf("AutoMigrate warning/error: %v", err)
 	}
-	return pool
+
+	return db
 }

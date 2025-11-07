@@ -5,20 +5,22 @@ import (
 )
 
 type Config struct {
-	APP_PORT string
-	DB_URL   string
+	DatabaseURL string
+	JWTSecret   string
+	AppPort     string
+}
+
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
 
 func Load() Config {
 	return Config{
-		APP_PORT: getEnv("APP_PORT", ":3000"),
-		DB_URL:   getEnv("DB_URL", ""),
+		DatabaseURL: getEnv("DATABASE_URL", "postgresql://postgres:8eGyXSAYimygW4m@db.jzckycyvzxolhrduashn.supabase.co:5432/postgres"),
+		JWTSecret:   getEnv("JWT_SECRET", "replace-this-secret"),
+		AppPort:     getEnv("APP_PORT", ":3000"),
 	}
-}
-
-func getEnv(key, fallback string) string {
-	if val := os.Getenv(key); val != "" {
-		return val
-	}
-	return fallback
 }

@@ -1,24 +1,38 @@
-package api
+package main
 
 import (
-	"goServer/internal/config"
-	"goServer/internal/db"
-	"goServer/internal/router"
 	"log"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/joho/godotenv"
+
+	"goServer/internal/config"
+	"goServer/internal/db"
+	"goServer/internal/router"
 )
 
 func main() {
+	_ = godotenv.Load()
+
 	cfg := config.Load()
 
 	pool := db.Connect(cfg)
-	defer pool.Close()
+	defer func() {
+		sqlDB, _ := pool.DB()
+		_ = sqlDB.Close()
+	}()
 
 	app := fiber.New()
 
-	router.SetupRoutes(app, pool)
+	app.Use(logger.New())
+	app.Use(cors.New())
 
-	log.Println("Server running on", cfg.APP_PORT)
-	app.Listen(cfg.APP_PORT)
+	router.SetupRoutes(app, pool, cfg)
+
+	log.Printf("Server listening on %s", cfg.AppPort)
+	if err := app.Listen(cfg.AppPort); err != nil {
+		log.Fatal(err)
+	}
 }
