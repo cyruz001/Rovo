@@ -39,7 +39,7 @@ func (h *UserHandler) Profile(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "missing sub claim")
 	}
 
-	user, err := h.service.GetByID(context.Background(), id)
+	user, err := h.service.FindByID(context.Background(), id)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "database error")
 	}

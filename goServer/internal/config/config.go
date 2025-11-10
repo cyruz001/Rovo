@@ -19,8 +19,8 @@ func getEnv(key, fallback string) string {
 
 func Load() Config {
 	return Config{
-		DatabaseURL: getEnv("DATABASE_URL", "postgresql://postgres:8eGyXSAYimygW4m@db.jzckycyvzxolhrduashn.supabase.co:5432/postgres"),
-		JWTSecret:   getEnv("JWT_SECRET", "replace-this-secret"),
-		AppPort:     getEnv("APP_PORT", ":3000"),
+		DatabaseURL: os.Getenv("DATABASE_URL"),
+		JWTSecret:   os.Getenv("JWT_SECRET"),
+		AppPort:     os.Getenv("APP_PORT"),
 	}
 }

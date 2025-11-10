@@ -14,7 +14,7 @@ import (
 func SetupRoutes(app *fiber.App, db *gorm.DB, cfg config.Config) {
 	// dependency injection
 	userRepo := repository.NewUserRepository(db)
-	userSvc := service.NewUserService(userRepo)
+	userSvc := service.NewUserService(*userRepo)
 
 	authHandler := handler.NewAuthHandler(userSvc, cfg)
 	userHandler := handler.NewUserHandler(userSvc)

@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"time"
 
 	"goServer/internal/model"
 	"goServer/internal/repository"
@@ -11,53 +10,44 @@ import (
 )
 
 type UserService struct {
-	repo *repository.UserRepository
+	userRepo repository.UserRepository
 }
 
-func NewUserService(repo *repository.UserRepository) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(r repository.UserRepository) *UserService {
+	return &UserService{userRepo: r}
 }
 
 func (s *UserService) Register(ctx context.Context, email, password string) (*model.User, error) {
-	// check existing
-	existing, err := s.repo.FindByEmail(ctx, email)
-	if err != nil {
-		return nil, err
-	}
-	if existing != nil {
-		return nil, errors.New("email already in use")
-	}
-
 	hashed, err := utils.HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	u := &model.User{
-		Email:     email,
-		Password:  hashed,
-		CreatedAt: time.Now(),
+	user := &model.User{
+		Email:    email,
+		Password: hashed,
+		Role:     "user", // default role for your twitter-style app
 	}
-	if err := s.repo.Create(ctx, u); err != nil {
-		return nil, err
-	}
-	return u, nil
+
+	return user, s.userRepo.Create(ctx, user)
 }
 
 func (s *UserService) Authenticate(ctx context.Context, email, password string) (*model.User, error) {
-	user, err := s.repo.FindByEmail(ctx, email)
+	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
-		return nil, errors.New("invalid credentials")
+		return nil, errors.New("user not found")
 	}
+
 	if err := utils.CheckPassword(password, user.Password); err != nil {
 		return nil, errors.New("invalid credentials")
 	}
+
 	return user, nil
 }
 
-func (s *UserService) GetByID(ctx context.Context, id string) (*model.User, error) {
-	return s.repo.FindByID(ctx, id)
+func (s *UserService) FindByID(ctx context.Context, id string) (*model.User, error) {
+	return s.userRepo.FindByID(ctx, id)
 }

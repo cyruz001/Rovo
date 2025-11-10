@@ -23,7 +23,11 @@ func JWT(secret string) fiber.Handler {
 			return fiber.ErrUnauthorized
 		}
 
-		c.Locals("user", tok)
+		claims := tok.Claims.(jwt.MapClaims)
+
+		c.Locals("user_id", claims["user_id"])
+		c.Locals("role", claims["role"])
+
 		return c.Next()
 	}
 }
