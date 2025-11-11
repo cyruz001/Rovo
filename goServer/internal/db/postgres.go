@@ -12,16 +12,14 @@ import (
 )
 
 func Connect(cfg config.Config) *gorm.DB {
-	User := model.User{}
 	dial := postgres.Open(cfg.DatabaseURL)
 	db, err := gorm.Open(dial, &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Error),
 	})
 	if err != nil {
 		log.Fatalf("failed to conn ect database: %v", err)
 	}
-
-	if err := db.AutoMigrate(User); err != nil {
+	if err := db.AutoMigrate(&model.User{}); err != nil {
 		log.Printf("AutoMigrate warning/error: %v", err)
 	}
 

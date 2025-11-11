@@ -26,7 +26,7 @@ func (s *UserService) Register(ctx context.Context, email, password string) (*mo
 	user := &model.User{
 		Email:    email,
 		Password: hashed,
-		Role:     "user", // default role for your twitter-style app
+		Role:     "user",
 	}
 
 	return user, s.userRepo.Create(ctx, user)

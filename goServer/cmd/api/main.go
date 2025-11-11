@@ -4,8 +4,6 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/cors"
-	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/joho/godotenv"
 
 	"goServer/internal/config"
@@ -13,25 +11,36 @@ import (
 	"goServer/internal/router"
 )
 
-func main() {
-	_ = godotenv.Load()
+func init() {
+	// Try local folder (cmd/api)
+	if err := godotenv.Load(); err != nil {
+		// Try project root
+		if err := godotenv.Load("../../.env"); err != nil {
+			log.Println("[init] No .env file found in current or parent dir")
+		}
+	}
+}
 
+func main() {
 	cfg := config.Load()
 
-	pool := db.Connect(cfg)
-	defer func() {
-		sqlDB, _ := pool.DB()
-		_ = sqlDB.Close()
-	}()
+	if cfg.DatabaseURL == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+	if cfg.JWTSecret == "" {
+		log.Fatal("JWT_SECRET is not set")
+	}
+	if cfg.AppPort == "" {
+		cfg.AppPort = "8080"
+	}
+
+	database := db.Connect(cfg)
 
 	app := fiber.New()
 
-	app.Use(logger.New())
-	app.Use(cors.New())
+	router.SetupRoutes(app, database, cfg)
 
-	router.SetupRoutes(app, pool, cfg)
-
-	log.Printf("Server listening on %s", cfg.AppPort)
+	log.Printf("Server listening on port %s", cfg.AppPort)
 	if err := app.Listen(cfg.AppPort); err != nil {
 		log.Fatal(err)
 	}

@@ -15,6 +15,7 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+
 }
 
 func Load() Config {
