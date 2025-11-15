@@ -17,7 +17,7 @@ func Connect(cfg config.Config) *gorm.DB {
 		Logger: logger.Default.LogMode(logger.Error),
 	})
 	if err != nil {
-		log.Fatalf("failed to conn ect database: %v", err)
+		log.Fatalf("failed to connect database: %v", err)
 	}
 	if err := db.AutoMigrate(&model.User{}); err != nil {
 		log.Printf("AutoMigrate warning/error: %v", err)

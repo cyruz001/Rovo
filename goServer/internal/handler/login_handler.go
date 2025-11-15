@@ -21,18 +21,18 @@ func LoginHandler(db *gorm.DB, jwtSecret string) fiber.Handler {
 		}
 
 		var user model.User
-		if err := db.Where("email = ?", body.Email).First(&user).Error; err != nil {
-			return c.Status(401).JSON(fiber.Map{"error": "Invalid email or password"})
+		if err := db.Where("username = ?", body.Username).First(&user).Error; err != nil {
+			return c.Status(401).JSON(fiber.Map{"error": "Invalid email"})
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-			return c.Status(401).JSON(fiber.Map{"error": "Invalid email or password"})
+			return c.Status(401).JSON(fiber.Map{"error": "Invalid password"})
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"user_id": user.ID,
 			"role":    user.Role,
-			"exp":     time.Now().Add(time.Hour * 24).Unix(), // 24 hours
+			"exp":     time.Now().Add(time.Hour * 1).Unix(), // 1 hour
 		})
 
 		tokenString, _ := token.SignedString([]byte(jwtSecret))

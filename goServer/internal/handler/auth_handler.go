@@ -23,6 +23,8 @@ func NewAuthHandler(s *service.UserService, cfg config.Config) *AuthHandler {
 type registerReq struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
 }
 
 func (h *AuthHandler) Register(c fiber.Ctx) error {
@@ -32,7 +34,9 @@ func (h *AuthHandler) Register(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
 	}
 
-	user, err := h.service.Register(context.Background(), req.Email, req.Password)
+	print("Reached here")
+
+	user, err := h.service.Register(context.Background(), req.Email, req.Username, req.Password)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -45,7 +49,7 @@ func (h *AuthHandler) Register(c fiber.Ctx) error {
 
 func (h *AuthHandler) Login(c fiber.Ctx) error {
 	type loginReq struct {
-		Email    string `json:"email"`
+		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 
@@ -55,15 +59,16 @@ func (h *AuthHandler) Login(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid request body")
 	}
 
-	user, err := h.service.Authenticate(context.Background(), req.Email, req.Password)
+	user, err := h.service.Authenticate(context.Background(), req.Username, req.Password)
 	if err != nil {
 		return fiber.NewError(fiber.StatusUnauthorized, "invalid credentials")
 	}
 
 	// JWT
 	claims := jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"sub":  user.ID,
+		"role": user.Role,
+		"exp":  time.Now().Add(24 * time.Hour).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

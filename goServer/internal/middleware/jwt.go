@@ -25,8 +25,20 @@ func JWT(secret string) fiber.Handler {
 
 		claims := tok.Claims.(jwt.MapClaims)
 
-		c.Locals("user_id", claims["user_id"])
-		c.Locals("role", claims["role"])
+		// Extract and validate claims
+		sub, ok := claims["sub"].(string)
+		if !ok {
+			return fiber.ErrUnauthorized
+		}
+
+		role, ok := claims["role"].(string)
+		if !ok {
+			role = "USER" // Default role if not present
+		}
+
+		// Set locals
+		c.Locals("sub", sub)
+		c.Locals("role", role)
 
 		return c.Next()
 	}
